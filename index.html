@@ -53,22 +53,6 @@ var hospitalIcon = L.icon({
 });
 
 // Load GeoJSON files
-fetch('LGA_boundary.json')
-  .then(res => res.json())
-  .then(data => {
-    L.geoJSON(data, {
-      style: {
-        color: 'black',  // Black border for LGA boundary
-        fillColor: 'none',  // Hollow inside
-        weight: 4  // Increased border thickness
-      },
-      onEachFeature: function (feature, layer) {
-        layer.on('click', function () {
-          document.getElementById('info').innerText = "Selected LGA: " + feature.properties.LGA;
-        });
-      }
-    }).addTo(map);
-  });
 
 fetch('Access_Above_5KM.json')
   .then(res => res.json())
@@ -105,6 +89,24 @@ fetch('PHC.json')
           .bindPopup(feature.properties.Facility_N);  // Show Facility Name in popup
       }
     }).addTo(map);
+  });
+
+// Load LGA_boundary.json as the last layer to make it appear on top
+fetch('LGA_boundary.json')
+  .then(res => res.json())
+  .then(data => {
+    L.geoJSON(data, {
+      style: {
+        color: 'black',  // Black border for LGA boundary
+        fillColor: 'none',  // Hollow inside
+        weight: 4  // Increased border thickness
+      },
+      onEachFeature: function (feature, layer) {
+        layer.on('click', function () {
+          document.getElementById('info').innerText = "Selected LGA: " + feature.properties.LGA;
+        });
+      }
+    }).addTo(map);  // This is now the last layer added, so it will be on top
   });
 
 // Add scale
