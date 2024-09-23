@@ -1,121 +1,116 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Katsina State Map</title>
+  <title>Katsina State PHC Map</title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
   <style>
     #map {
-      height: 600px;
+      height: 90vh;
       width: 100%;
     }
     .legend {
       background: white;
       padding: 10px;
-    }
-    .legend i {
-      width: 20px;
-      height: 10px;
-      display: inline-block;
-    }
-    /* Custom pattern for crosshatch */
-    .red-crosshatch {
-      background-image: repeating-linear-gradient(45deg, red 1px, transparent 1px, transparent 10px, red 1px);
-    }
-    .green-crosshatch {
-      background-image: repeating-linear-gradient(45deg, green 1px, transparent 1px, transparent 10px, green 1px);
+      line-height: 1.5;
+      border: 2px solid black;
     }
   </style>
 </head>
 <body>
+  <h3>Katsina State Primary Health Care (PHC) Mapping</h3>
+  <div id="map"></div>
 
-<div id="map"></div>
+  <script>
+    // Initialize the map
+    var map = L.map('map').setView([12.9, 7.6], 7); // Set to Katsina State
 
-<script>
-// Initialize the map
-var map = L.map('map').setView([12.989, 7.616], 7);  // Coordinates for Katsina State
-
-// Add base layer
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-}).addTo(map);
-
-// Hospital Icon for PHCs
-var hospitalIcon = L.icon({
-  iconUrl: 'https://drive.google.com/file/d/1dTzFyTXcbr9U7TC4JhMu7JTkFdfW_AJd/view?usp=sharing,  // URL for the hospital icon
-  iconSize: [20, 20],  // Size of the icon
-  iconAnchor: [10, 10],  // Anchor point of the icon (center)
-  popupAnchor: [0, -10]  // Position for the popup anchor
-});
-
-// Load GeoJSON files
-fetch('LGA_boundary.json')
-  .then(res => res.json())
-  .then(data => {
-    L.geoJSON(data, {
-      style: {
-        color: 'black',  // Black border for LGA boundary
-        fillColor: 'none',  // Hollow inside
-        weight: 2
-      }
+    // Add a basemap (like world street map)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '© OpenStreetMap contributors'
     }).addTo(map);
-  });
 
-fetch('Access_Above_5KM.json')
-  .then(res => res.json())
-  .then(data => {
-    L.geoJSON(data, {
-      style: {
-        color: 'red',  // Red border for Access Above 5KM
-        fillColor: 'red',  // Red crosshatch pattern
-        fillOpacity: 0.1,  // 10% opacity
-        dashArray: '5, 5'  // Crosshatch/net-like pattern
-      }
-    }).addTo(map);
-  });
+    // Define the custom hospital icon
+    var hospitalIcon = L.icon({
+      iconUrl: 'https://drive.google.com/uc?export=view&id=1dTzFyTXcbr9U7TC4JhMu7JTkFdfW_AJd',  // Updated Google Drive link
+      iconSize: [20, 20],
+      iconAnchor: [10, 10],
+      popupAnchor: [0, -10]
+    });
 
-fetch('Access_Within_5KM.json')
-  .then(res => res.json())
-  .then(data => {
-    L.geoJSON(data, {
-      style: {
-        color: 'green',  // Green border for Access Within 5KM
-        fillColor: 'green',  // Green crosshatch pattern
-        fillOpacity: 0.1,  // 10% opacity
-        dashArray: '5, 5'  // Crosshatch/net-like pattern
-      }
-    }).addTo(map);
-  });
+    // Add PHC points with hospital icon
+    fetch('PHC.json')
+      .then(response => response.json())
+      .then(data => {
+        L.geoJSON(data, {
+          pointToLayer: function(feature, latlng) {
+            return L.marker(latlng, {icon: hospitalIcon})
+              .bindPopup("PHC: " + feature.properties.Name);
+          }
+        }).addTo(map);
+      });
 
-fetch('PHC.json')
-  .then(res => res.json())
-  .then(data => {
-    L.geoJSON(data, {
-      pointToLayer: function (feature, latlng) {
-        return L.marker(latlng, { icon: hospitalIcon }).bindPopup("Primary Health Center");
-      }
-    }).addTo(map);
-  });
+    // Load the Access Above 5KM layer with red crosshatch style
+    fetch('Access_Above_5KM.json')
+      .then(response => response.json())
+      .then(data => {
+        L.geoJSON(data, {
+          style: {
+            color: 'red',
+            fillColor: 'red',
+            fillOpacity: 0.1,
+            weight: 1,
+            dashArray: '5, 5'
+          }
+        }).addTo(map);
+      });
 
-// Add scale
-L.control.scale().addTo(map);
+    // Load the Access Within 5KM layer with green crosshatch style
+    fetch('Access_Within_5KM.json')
+      .then(response => response.json())
+      .then(data => {
+        L.geoJSON(data, {
+          style: {
+            color: 'green',
+            fillColor: 'green',
+            fillOpacity: 0.1,
+            weight: 1,
+            dashArray: '5, 5'
+          }
+        }).addTo(map);
+      });
 
-// Add legend
-var legend = L.control({ position: 'bottomright' });
+    // Load the LGA Boundary layer with hollow style and black border
+    fetch('LGA_boundary.json')
+      .then(response => response.json())
+      .then(data => {
+        L.geoJSON(data, {
+          style: {
+            color: 'black',
+            fillOpacity: 0,
+            weight: 2
+          }
+        }).addTo(map);
+      });
 
-legend.onAdd = function (map) {
-    var div = L.DomUtil.create('div', 'info legend');
-    div.innerHTML += '<i style="background: #800000"></i> PHC<br>';
-    div.innerHTML += '<i style="background: repeating-linear-gradient(45deg, red 1px, transparent 1px, transparent 10px, red 1px);"></i> Access Above 5KM<br>';
-    div.innerHTML += '<i style="background: repeating-linear-gradient(45deg, green 1px, transparent 1px, transparent 10px, green 1px);"></i> Access Within 5KM<br>';
-    div.innerHTML += '<i style="background: none; border: 2px solid black"></i> LGA Boundary<br>';
-    return div;
-};
+    // Add a scale bar to the map
+    L.control.scale().addTo(map);
 
-legend.addTo(map);
-</script>
-
+    // Add a legend to the map
+    var legend = L.control({ position: "bottomright" });
+    legend.onAdd = function(map) {
+      var div = L.DomUtil.create("div", "legend");
+      div.innerHTML += "<h4>Legend</h4>";
+      div.innerHTML += '<i style="background: red"></i> Access Above 5KM<br>';
+      div.innerHTML += '<i style="background: green"></i> Access Within 5KM<br>';
+      div.innerHTML += '<i style="border: 2px solid black"></i> LGA Boundary<br>';
+      div.innerHTML += '<img src="https://drive.google.com/uc?export=view&id=1dTzFyTXcbr9U7TC4JhMu7JTkFdfW_AJd" style="width:20px; height:20px;"> PHC<br>';
+      return div;
+    };
+    legend.addTo(map);
+  </script>
 </body>
 </html>
