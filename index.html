@@ -35,66 +35,59 @@
 
     // Define the custom hospital icon
     var hospitalIcon = L.icon({
-      iconUrl: 'https://drive.google.com/uc?export=view&id=1dTzFyTXcbr9U7TC4JhMu7JTkFdfW_AJd',  // Updated Google Drive link
+      iconUrl: 'https://drive.google.com/uc?export=view&id=1dTzFyTXcbr9U7TC4JhMu7JTkFdfW_AJd',
       iconSize: [20, 20],
       iconAnchor: [10, 10],
       popupAnchor: [0, -10]
     });
 
-    // Add PHC points with hospital icon
-    fetch('PHC.json')
-      .then(response => response.json())
-      .then(data => {
-        L.geoJSON(data, {
-          pointToLayer: function(feature, latlng) {
-            return L.marker(latlng, {icon: hospitalIcon})
-              .bindPopup("PHC: " + feature.properties.Name);
+    // Function to load GeoJSON data
+    function loadGeoJSON(url, styleFunction, pointToLayerFunction) {
+      fetch(url)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok: ' + response.statusText);
           }
-        }).addTo(map);
-      });
+          return response.json();
+        })
+        .then(data => {
+          L.geoJSON(data, {
+            style: styleFunction,
+            pointToLayer: pointToLayerFunction
+          }).addTo(map);
+        })
+        .catch(error => console.error('Error loading GeoJSON:', error));
+    }
+
+    // Add PHC points with hospital icon
+    loadGeoJSON('PHC.json', null, function(feature, latlng) {
+      return L.marker(latlng, {icon: hospitalIcon}).bindPopup("PHC: " + feature.properties.Name);
+    });
 
     // Load the Access Above 5KM layer with red crosshatch style
-    fetch('Access_Above_5KM.json')
-      .then(response => response.json())
-      .then(data => {
-        L.geoJSON(data, {
-          style: {
-            color: 'red',
-            fillColor: 'red',
-            fillOpacity: 0.1,
-            weight: 1,
-            dashArray: '5, 5'
-          }
-        }).addTo(map);
-      });
+    loadGeoJSON('Access_Above_5KM.json', {
+      color: 'red',
+      fillColor: 'red',
+      fillOpacity: 0.1,
+      weight: 1,
+      dashArray: '5, 5'
+    }, null);
 
     // Load the Access Within 5KM layer with green crosshatch style
-    fetch('Access_Within_5KM.json')
-      .then(response => response.json())
-      .then(data => {
-        L.geoJSON(data, {
-          style: {
-            color: 'green',
-            fillColor: 'green',
-            fillOpacity: 0.1,
-            weight: 1,
-            dashArray: '5, 5'
-          }
-        }).addTo(map);
-      });
+    loadGeoJSON('Access_Within_5KM.json', {
+      color: 'green',
+      fillColor: 'green',
+      fillOpacity: 0.1,
+      weight: 1,
+      dashArray: '5, 5'
+    }, null);
 
     // Load the LGA Boundary layer with hollow style and black border
-    fetch('LGA_boundary.json')
-      .then(response => response.json())
-      .then(data => {
-        L.geoJSON(data, {
-          style: {
-            color: 'black',
-            fillOpacity: 0,
-            weight: 2
-          }
-        }).addTo(map);
-      });
+    loadGeoJSON('LGA_boundary.json', {
+      color: 'black',
+      fillOpacity: 0,
+      weight: 2
+    }, null);
 
     // Add a scale bar to the map
     L.control.scale().addTo(map);
