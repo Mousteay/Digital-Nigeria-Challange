@@ -1,57 +1,109 @@
-// Initialize your map (assuming you have a map variable defined)
-const map = L.map('map').setView([latitude, longitude], zoomLevel); // Set initial view
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Katsina State PHC Map</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <style>
+    #map {
+      height: 90vh;
+      width: 100%;
+    }
+    .legend {
+      background: white;
+      padding: 10px;
+      line-height: 1.5;
+      border: 2px solid black;
+    }
+  </style>
+</head>
+<body>
+  <h3>Katsina State Primary Health Care (PHC) Mapping</h3>
+  <div id="map"></div>
 
-// Load the LGA boundaries
-fetch('LGA_boundary.json')
-    .then(response => response.json())
-    .then(boundaryData => {
-        // Load the PHC data
-        return fetch('PHC_data.json'); // Adjust this path to your actual PHC file
-    })
-    .then(response => response.json())
-    .then(phcData => {
-        // Create a layer for the boundaries
-        L.geoJSON(boundaryData, {
-            onEachFeature: function (feature, layer) {
-                // Add a click event to each boundary
-                layer.on('click', function (e) {
-                    const lat = e.latlng.lat;
-                    const lng = e.latlng.lng;
+  <script>
+    // Initialize the map
+    var map = L.map('map').setView([12.9, 7.6], 7); // Set to Katsina State
 
-                    // Find LGA based on the clicked point
-                    const lgas = findLGAs(lat, lng, phcData);
-                    displayLGAs(lgas);
-                });
-            }
-        }).addTo(map);
-    })
-    .catch(error => console.error('Error loading data:', error));
+    // Add a basemap (like world street map)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
 
-// Function to find LGAs based on clicked coordinates
-function findLGAs(lat, lng, phcData) {
-    const lgas = new Set();
-
-    phcData.forEach(item => {
-        const facilityLat = item.properties.Latitude;
-        const facilityLng = item.properties.Longitude;
-
-        // Check if clicked coordinates are close to any facility (within a certain distance)
-        if (Math.abs(facilityLat - lat) < 0.01 && Math.abs(facilityLng - lng) < 0.01) {
-            lgas.add(item.properties.LGA); // Add LGA name to the set
-        }
+    // Define the custom hospital icon
+    var hospitalIcon = L.icon({
+      iconUrl: 'https://drive.google.com/uc?export=view&id=1dTzFyTXcbr9U7TC4JhMu7JTkFdfW_AJd',
+      iconSize: [20, 20],
+      iconAnchor: [10, 10],
+      popupAnchor: [0, -10]
     });
 
-    return Array.from(lgas); // Convert the set back to an array
-}
+    // Function to load GeoJSON data
+    function loadGeoJSON(url, styleFunction, pointToLayerFunction) {
+      fetch(url)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok: ' + response.statusText);
+          }
+          return response.json();
+        })
+        .then(data => {
+          L.geoJSON(data, {
+            style: styleFunction,
+            pointToLayer: pointToLayerFunction
+          }).addTo(map);
+        })
+        .catch(error => console.error('Error loading GeoJSON:', error));
+    }
 
-// Function to display the LGA names
-function displayLGAs(lgas) {
-    let displayText = 'Local Governments:\n';
-
-    lgas.forEach(lga => {
-        displayText += `- ${lga}\n`;
+    // Add PHC points with hospital icon
+    loadGeoJSON('PHC.json', null, function(feature, latlng) {
+      return L.marker(latlng, {icon: hospitalIcon}).bindPopup("PHC: " + feature.properties.Name);
     });
 
-    // Display the information (adjust the HTML element as needed)
-    document.getElementById('lga-display').innerText = displayText;
-}
+    // Load the Access Above 5KM layer with red crosshatch style
+    loadGeoJSON('Access_Above_5KM.json', {
+      color: 'red',
+      fillColor: 'red',
+      fillOpacity: 0.1,
+      weight: 1,
+      dashArray: '5, 5'
+    }, null);
+
+    // Load the Access Within 5KM layer with green crosshatch style
+    loadGeoJSON('Access_Within_5KM.json', {
+      color: 'green',
+      fillColor: 'green',
+      fillOpacity: 0.1,
+      weight: 1,
+      dashArray: '5, 5'
+    }, null);
+
+    // Load the LGA Boundary layer with hollow style and black border
+    loadGeoJSON('LGA_boundary.json', {
+      color: 'black',
+      fillOpacity: 0,
+      weight: 2
+    }, null);
+
+    // Add a scale bar to the map
+    L.control.scale().addTo(map);
+
+    // Add a legend to the map
+    var legend = L.control({ position: "bottomright" });
+    legend.onAdd = function(map) {
+      var div = L.DomUtil.create("div", "legend");
+      div.innerHTML += "<h4>Legend</h4>";
+      div.innerHTML += '<i style="background: red"></i> Access Above 5KM<br>';
+      div.innerHTML += '<i style="background: green"></i> Access Within 5KM<br>';
+      div.innerHTML += '<i style="border: 2px solid black"></i> LGA Boundary<br>';
+      div.innerHTML += '<img src="https://drive.google.com/uc?export=view&id=1dTzFyTXcbr9U7TC4JhMu7JTkFdfW_AJd" style="width:20px; height:20px;"> PHC<br>';
+      return div;
+    };
+    legend.addTo(map);
+  </script>
+</body>
+</html>
