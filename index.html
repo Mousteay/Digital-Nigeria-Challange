@@ -24,15 +24,16 @@
       height: 10px;
       display: inline-block;
     }
-    #lga-display {
+    #info {
       margin-top: 10px;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
 
 <div id="map"></div>
-<pre id="lga-display"></pre>
+<div id="info"></div>
 
 <script>
 // Initialize the map
@@ -51,9 +52,6 @@ var hospitalIcon = L.icon({
   popupAnchor: [0, -10]
 });
 
-// Store LGA data for reference
-var lgaData = [];
-
 // Load GeoJSON files
 fetch('LGA_boundary.json')
   .then(res => res.json())
@@ -66,7 +64,7 @@ fetch('LGA_boundary.json')
       },
       onEachFeature: function (feature, layer) {
         layer.on('click', function () {
-          displayLGA(feature.properties.LGA);
+          document.getElementById('info').innerText = "Selected LGA: " + feature.properties.LGA;
         });
       }
     }).addTo(map);
@@ -101,7 +99,6 @@ fetch('Access_Within_5KM.json')
 fetch('PHC.json')
   .then(res => res.json())
   .then(data => {
-    lgaData = data; // Store PHC data for later use
     L.geoJSON(data, {
       pointToLayer: function (feature, latlng) {
         return L.marker(latlng, { icon: hospitalIcon })
@@ -109,12 +106,6 @@ fetch('PHC.json')
       }
     }).addTo(map);
   });
-
-// Function to display the LGA name
-function displayLGA(lgaName) {
-  const displayElement = document.getElementById('lga-display');
-  displayElement.innerText = 'Selected LGA: ' + lgaName;
-}
 
 // Add scale
 L.control.scale().addTo(map);
