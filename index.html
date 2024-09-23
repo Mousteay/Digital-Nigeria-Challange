@@ -16,6 +16,8 @@
     .legend {
       background: white;
       padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
     }
     .legend i {
       width: 20px;
@@ -117,8 +119,8 @@ var legend = L.control({ position: 'bottomright' });
 legend.onAdd = function (map) {
     var div = L.DomUtil.create('div', 'info legend');
     div.innerHTML += '<i style="background: #800000"></i> PHC<br>';
-    div.innerHTML += '<i style="background: red; opacity: 0.1;"></i> Access Above 5KM<br>';
-    div.innerHTML += '<i style="background: green; opacity: 0.1;"></i> Access Within 5KM<br>';
+    div.innerHTML += '<i style="background: rgba(255, 0, 0, 0.5); border: 2px solid red;"></i> Access Above 5KM<br>';
+    div.innerHTML += '<i style="background: rgba(0, 255, 0, 0.5); border: 2px solid green;"></i> Access Within 5KM<br>';
     div.innerHTML += '<i style="background: none; border: 2px solid black"></i> LGA Boundary<br>';
     return div;
 };
