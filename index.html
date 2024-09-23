@@ -91,7 +91,8 @@ fetch('PHC.json')
   .then(data => {
     L.geoJSON(data, {
       pointToLayer: function (feature, latlng) {
-        return L.marker(latlng, { icon: hospitalIcon }).bindPopup("Primary Health Center");
+        return L.marker(latlng, { icon: hospitalIcon })
+          .bindPopup(feature.properties.Facility_N);  // Show Facility Name in popup
       }
     }).addTo(map);
   });
