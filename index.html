@@ -1,57 +1,93 @@
-// Initialize your map (assuming you have a map variable defined)
-const map = L.map('map').setView([latitude, longitude], zoomLevel); // Set initial view
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LGA Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map { height: 600px; }
+        #lga-display { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <pre id="lga-display"></pre>
 
-// Load the LGA boundaries
-fetch('LGA_boundary.json')
-    .then(response => response.json())
-    .then(boundaryData => {
-        // Load the PHC data
-        return fetch('PHC_data.json'); // Adjust this path to your actual PHC file
-    })
-    .then(response => response.json())
-    .then(phcData => {
-        // Create a layer for the boundaries
-        L.geoJSON(boundaryData, {
-            onEachFeature: function (feature, layer) {
-                // Add a click event to each boundary
-                layer.on('click', function (e) {
-                    const lat = e.latlng.lat;
-                    const lng = e.latlng.lng;
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map
+        const map = L.map('map').setView([11.5, 7.4], 8); // Adjust initial coordinates and zoom level
 
-                    // Find LGA based on the clicked point
-                    const lgas = findLGAs(lat, lng, phcData);
-                    displayLGAs(lgas);
-                });
-            }
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
         }).addTo(map);
-    })
-    .catch(error => console.error('Error loading data:', error));
 
-// Function to find LGAs based on clicked coordinates
-function findLGAs(lat, lng, phcData) {
-    const lgas = new Set();
+        // Load the LGA boundaries
+        fetch('LGA_boundary.json')
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to load LGA boundaries');
+                return response.json();
+            })
+            .then(boundaryData => {
+                // Load the PHC data
+                return fetch('PHC_data.json'); // Adjust this path to your actual PHC file
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to load PHC data');
+                return response.json();
+            })
+            .then(phcData => {
+                // Create a layer for the boundaries
+                L.geoJSON(boundaryData, {
+                    onEachFeature: function (feature, layer) {
+                        // Add a click event to each boundary
+                        layer.on('click', function (e) {
+                            const lat = e.latlng.lat;
+                            const lng = e.latlng.lng;
 
-    phcData.forEach(item => {
-        const facilityLat = item.properties.Latitude;
-        const facilityLng = item.properties.Longitude;
+                            // Find LGAs based on the clicked point
+                            const lgas = findLGAs(lat, lng, phcData);
+                            displayLGAs(lgas);
+                        });
+                    }
+                }).addTo(map);
+            })
+            .catch(error => console.error('Error loading data:', error));
 
-        // Check if clicked coordinates are close to any facility (within a certain distance)
-        if (Math.abs(facilityLat - lat) < 0.01 && Math.abs(facilityLng - lng) < 0.01) {
-            lgas.add(item.properties.LGA); // Add LGA name to the set
+        // Function to find LGAs based on clicked coordinates
+        function findLGAs(lat, lng, phcData) {
+            const lgas = new Set();
+
+            phcData.forEach(item => {
+                const facilityLat = item.properties.Latitude;
+                const facilityLng = item.properties.Longitude;
+
+                // Check if clicked coordinates are close to any facility (within a certain distance)
+                if (Math.abs(facilityLat - lat) < 0.01 && Math.abs(facilityLng - lng) < 0.01) {
+                    lgas.add(item.properties.LGA); // Add LGA name to the set
+                }
+            });
+
+            return Array.from(lgas); // Convert the set back to an array
         }
-    });
 
-    return Array.from(lgas); // Convert the set back to an array
-}
+        // Function to display the LGA names
+        function displayLGAs(lgas) {
+            const displayElement = document.getElementById('lga-display');
 
-// Function to display the LGA names
-function displayLGAs(lgas) {
-    let displayText = 'Local Governments:\n';
-
-    lgas.forEach(lga => {
-        displayText += `- ${lga}\n`;
-    });
-
-    // Display the information (adjust the HTML element as needed)
-    document.getElementById('lga-display').innerText = displayText;
-}
+            if (lgas.length === 0) {
+                displayElement.innerText = 'No Local Government found.';
+            } else {
+                let displayText = 'Local Governments:\n';
+                lgas.forEach(lga => {
+                    displayText += `- ${lga}\n`;
+                });
+                displayElement.innerText = displayText;
+            }
+        }
+    </script>
+</body>
+</html>
