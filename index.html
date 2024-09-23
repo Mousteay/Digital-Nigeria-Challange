@@ -1,3 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Katsina State Map</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-pattern/dist/leaflet.pattern.css" />
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-pattern/dist/leaflet.pattern.js"></script>
+  <style>
+    #map {
+      height: 600px;
+      width: 100%;
+    }
+    .legend {
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    }
+    .legend i {
+      width: 20px;
+      height: 10px;
+      display: inline-block;
+    }
+    #info {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+<div id="info"></div>
+
 <script>
 // Initialize the map
 var map = L.map('map').setView([12.989, 7.616], 7);  // Coordinates for Katsina State
@@ -100,3 +137,6 @@ legend.onAdd = function (map) {
 
 legend.addTo(map);
 </script>
+
+</body>
+</html>
