@@ -60,7 +60,7 @@ fetch('LGA_boundary.json')
       style: {
         color: 'black',  // Black border for LGA boundary
         fillColor: 'none',  // Hollow inside
-        weight: 2
+        weight: 4  // Increased border thickness
       },
       onEachFeature: function (feature, layer) {
         layer.on('click', function () {
