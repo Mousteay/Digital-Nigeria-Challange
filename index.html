@@ -56,6 +56,11 @@ fetch('LGA_boundary.json')
         color: 'black',  // Black border for LGA boundary
         fillColor: 'none',  // Hollow inside
         weight: 2
+      },
+      onEachFeature: function (feature, layer) {
+        if (feature.properties && feature.properties.LGA) {
+          layer.bindPopup("LGA: " + feature.properties.LGA);  // Show LGA name on click
+        }
       }
     }).addTo(map);
   });
