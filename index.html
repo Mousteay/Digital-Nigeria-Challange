@@ -59,7 +59,7 @@ fetch('Access_Above_5KM.json')
   .then(data => {
     L.geoJSON(data, {
       style: {
-        color: 'rgba(255, 0, 0, 0.5)',  // Same as fill color (semi-transparent red)
+        color: 'rgba(255, 0, 0, 0.5)',  // Semi-transparent red
         weight: 2,
         fillColor: 'rgba(255, 0, 0, 0.5)',  // Semi-transparent red
         fillOpacity: 0.5  // 50% opacity
@@ -72,7 +72,7 @@ fetch('Access_Within_5KM.json')
   .then(data => {
     L.geoJSON(data, {
       style: {
-        color: 'rgba(0, 255, 0, 0.5)',  // Same as fill color (semi-transparent green)
+        color: 'rgba(0, 255, 0, 0.5)',  // Semi-transparent green
         weight: 2,
         fillColor: 'rgba(0, 255, 0, 0.5)',  // Semi-transparent green
         fillOpacity: 0.5  // 50% opacity
@@ -105,16 +105,20 @@ fetch('LGA_boundary.json')
   .then(data => {
     L.geoJSON(data, {
       style: {
-        color: 'black',  // Black border for LGA boundary
-        fillColor: 'none',  // Hollow inside
-        weight: 4  // Increased border thickness
+        color: 'black',      // Black border for LGA boundary
+        weight: 6,           // Thicker border for better visibility
+        fillColor: 'none',   // No fill color, keeping it hollow
+        opacity: 1,          // Full opacity to make it more visible
       },
       onEachFeature: function (feature, layer) {
         layer.on('click', function () {
           document.getElementById('info').innerText = "Selected LGA: " + feature.properties.LGA;
         });
+
+        // Ensure the boundary is brought to the front after being added
+        layer.bringToFront();
       }
-    }).addTo(map);  // This is now the last layer added, so it will be on top
+    }).addTo(map).bringToFront();  // Ensuring it's the last layer added and brought to front
   });
 
 // Add scale
