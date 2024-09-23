@@ -5,7 +5,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-pattern/dist/leaflet.pattern.css" />
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-pattern/dist/leaflet.pattern.js"></script>
   <style>
     #map {
       height: 600px;
@@ -19,13 +21,6 @@
       width: 20px;
       height: 10px;
       display: inline-block;
-    }
-    /* Custom pattern for crosshatch */
-    .red-crosshatch {
-      background-image: repeating-linear-gradient(45deg, rgba(255, 0, 0, 0.1) 1px, transparent 1px, transparent 10px, rgba(255, 0, 0, 0.1) 1px);
-    }
-    .green-crosshatch {
-      background-image: repeating-linear-gradient(45deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px, transparent 10px, rgba(0, 255, 0, 0.1) 1px);
     }
   </style>
 </head>
@@ -44,10 +39,10 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 // Hospital Icon for PHCs
 var hospitalIcon = L.icon({
-  iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',  // URL for the hospital icon
-  iconSize: [20, 20],  // Size of the icon
-  iconAnchor: [10, 10],  // Anchor point of the icon (center)
-  popupAnchor: [0, -10]  // Position for the popup anchor
+  iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+  iconSize: [20, 20],
+  iconAnchor: [10, 10],
+  popupAnchor: [0, -10]
 });
 
 // Load GeoJSON files
@@ -67,14 +62,18 @@ fetch('Access_Above_5KM.json')
   .then(res => res.json())
   .then(data => {
     L.geoJSON(data, {
-      style: function() {
-        return {
-          color: 'red',  // Red border
-          weight: 2,  // Border thickness
-          fillColor: 'red',  // Red fill
-          fillOpacity: 0.1,  // 10% opacity for fill
-          dashArray: '5, 5'  // Crosshatch/net-like pattern
-        };
+      style: {
+        color: 'red',
+        weight: 2,
+        fillPattern: new L.Pattern({ // Crosshatch effect
+          width: 10,
+          height: 10,
+          space: 5,
+          stroke: 'red',
+          strokeWidth: 1,
+          opacity: 0.1,
+          pattern: 'crosshatch'
+        })
       }
     }).addTo(map);
   });
@@ -83,14 +82,18 @@ fetch('Access_Within_5KM.json')
   .then(res => res.json())
   .then(data => {
     L.geoJSON(data, {
-      style: function() {
-        return {
-          color: 'green',  // Green border
-          weight: 2,  // Border thickness
-          fillColor: 'green',  // Green fill
-          fillOpacity: 0.1,  // 10% opacity for fill
-          dashArray: '5, 5'  // Crosshatch/net-like pattern
-        };
+      style: {
+        color: 'green',
+        weight: 2,
+        fillPattern: new L.Pattern({
+          width: 10,
+          height: 10,
+          space: 5,
+          stroke: 'green',
+          strokeWidth: 1,
+          opacity: 0.1,
+          pattern: 'crosshatch'
+        })
       }
     }).addTo(map);
   });
