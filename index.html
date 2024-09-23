@@ -85,8 +85,16 @@ fetch('PHC.json')
   .then(data => {
     L.geoJSON(data, {
       pointToLayer: function (feature, latlng) {
+        // Extract the Facility Name
+        var facilityName = feature.properties.Facility_N;
+
+        // Extract LGA and remove "kt"
+        var lga = feature.properties.LGA;
+        var formattedLGA = lga.replace(/^kt\s+/i, '');  // Remove "kt" prefix from LGA
+
+        // Bind the popup with Facility Name and LGA in brackets
         return L.marker(latlng, { icon: hospitalIcon })
-          .bindPopup(feature.properties.Facility_N);  // Show Facility Name in popup
+          .bindPopup(facilityName + " (" + formattedLGA + ")");  // Show Facility Name and LGA in the popup
       }
     }).addTo(map);
   });
